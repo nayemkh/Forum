@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Avoid redirect when already on desired target
+    RewriteCond %{REQUEST_URI} !=/public/index.php
+    # Redirect all traffic to /public/index.php
+    RewriteRule .* /public/index.php
+</IfModule>
