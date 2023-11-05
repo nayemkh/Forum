@@ -1,16 +1,22 @@
 <?php
 
-$viewsPath = __DIR__ . '/views/';
+$url = substr($_SERVER['REQUEST_URI'], 1);
+$viewsPath = __DIR__ . '/views';
 
-switch ($_SERVER['REQUEST_URI']) {
-    case '' :
-    case '/':
-        require $viewsPath . 'home.php';
-        break;
-    case '/registration' :
-        require $viewsPath . 'registration.php';
-        break;
-    default:
-        require $viewsPath . '404.php';
-        break;
+$views = ['registration'];
+
+if (in_array($url, $views)) {
+    $pageTitle = ucfirst($url);
+    include __DIR__ . '/elements/header.php';
+    require $viewsPath . '/' . $url . '.php';
+} else if ($url === '' || $url === '/') {
+    $pageTitle = 'Home';
+    include __DIR__ . '/elements/header.php';
+    require $viewsPath . '/home.php';
+} else {
+    $pageTitle = 'Page not found';
+    include __DIR__ . '/elements/header.php';
+    require $viewsPath . '/404.php';
 }
+
+include __DIR__ . '/elements/footer.php';
