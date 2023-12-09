@@ -2,6 +2,8 @@
 
 namespace Registration;
 
+use PDO;
+
 class Controller
 {
     public $fieldNames = ['email', 'username', 'password'];
@@ -13,6 +15,11 @@ class Controller
         // Validate submission if form is submitted
         if ($this->checkSubmission()) {
             $validationStatus = $this->validateSubmission($this->getValues());
+        }
+
+        // Store data in DB if validation passes
+        if (isset($validationStatus) && $validationStatus) {
+            $this->storeInfo($this->getValues());
         }
     }
 
@@ -29,7 +36,7 @@ class Controller
             $formValues = [];
             foreach ($this->fieldNames as $fieldName) {
                 if (isset($_POST[$fieldName]) && trim($_POST[$fieldName]) !== '') {
-                    $formValues[$fieldName][] = $_POST[$fieldName];
+                    $formValues[$fieldName] = $_POST[$fieldName];
                 }
             }
         }
@@ -53,5 +60,30 @@ class Controller
         }
 
         return $validation;
+    }
+
+    public function storeInfo($formValues)
+    {
+        $serverName = 'localhost';
+        $dbName = 'dev_forum';
+        $username = 'root';
+        $password = '';
+
+        try {
+            // Start DB connection
+            $conn = new PDO("mysql:host=$serverName;dbname=$dbName", $username, $password);
+
+            // Hash password
+            $password = password_hash($formValues['password'], PASSWORD_DEFAULT);
+
+            // Insert data into DB
+            $query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
+            $statement = $conn->prepare($query);
+            $statement->execute([$formValues['email'], $formValues['username'], $password]);
+
+            $this->messages['success'][] = sprintf('Your registration was successful, %s.', ucfirst($formValues['username']));
+        } catch (\PDOException $e) {
+            $this->messages['error'][] = 'There was an issue connecting to the database, please try again later.';
+        }
     }
 }
