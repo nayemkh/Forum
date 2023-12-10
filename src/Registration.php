@@ -2,8 +2,6 @@
 
 namespace Registration;
 
-use PDO;
-
 class Controller
 {
     public $fieldNames = ['email', 'username', 'password'];
@@ -64,14 +62,8 @@ class Controller
 
     public function storeInfo($formValues)
     {
-        $serverName = 'localhost';
-        $dbName = 'dev_forum';
-        $username = 'root';
-        $password = '';
-
         try {
-            // Start DB connection
-            $conn = new PDO("mysql:host=$serverName;dbname=$dbName", $username, $password);
+            $conn = connectDatabase();
 
             // Hash password
             $password = password_hash($formValues['password'], PASSWORD_DEFAULT);

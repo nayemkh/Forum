@@ -5,6 +5,8 @@ $viewsPath = __DIR__ . '/views';
 
 $views = ['registration'];
 
+require_once __DIR__ . '/elements/forum_functions.php';
+
 if (in_array($url, $views)) {
     $pageTitle = ucfirst($url);
     include __DIR__ . '/elements/header.php';
