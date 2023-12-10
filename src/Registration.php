@@ -2,6 +2,8 @@
 
 namespace Registration;
 
+use PDOException;
+
 class Controller
 {
     public $fieldNames = ['email', 'username', 'password'];
@@ -34,7 +36,7 @@ class Controller
             $formValues = [];
             foreach ($this->fieldNames as $fieldName) {
                 if (isset($_POST[$fieldName]) && trim($_POST[$fieldName]) !== '') {
-                    $formValues[$fieldName] = $_POST[$fieldName];
+                    $formValues[$fieldName] = trim($_POST[$fieldName]);
                 }
             }
         }
@@ -50,6 +52,26 @@ class Controller
             if (!isset($formValues[$fieldName])) {
                 $this->messages['error'][] = sprintf("The '%s' field must be filled in", ucfirst($fieldName));
             }
+        }
+
+        // Check if email or username is in use
+        try {
+            $conn = connectDatabase();
+
+            $query = 'SELECT username, email FROM users WHERE username = ? or email = ?';
+            $statement = $conn->prepare($query);
+            $statement->execute([$formValues['username'], $formValues['email']]);
+
+            $results = $statement->fetchAll();
+
+            if (isset($results[0]['username']) && strtolower($formValues['username']) == strtolower($results[0]['username'])) {
+                $this->messages['error'][] = sprintf('The username %s is already in use. Please choose another one.', $formValues['username']);
+            }
+            if (isset($results[0]['email']) && strtolower($formValues['email']) == strtolower($results[0]['email'])) {
+                $this->messages['error'][] = sprintf('The email %s is already in use. Please choose another one.', $formValues['email']);
+            }
+        } catch (PDOException $e) {
+            $this->messages['error'][] = 'There was an issue connecting to the database, please try again later.';
         }
 
         // Pass validation if no errors found
@@ -74,7 +96,7 @@ class Controller
             $statement->execute([$formValues['email'], $formValues['username'], $password]);
 
             $this->messages['success'][] = sprintf('Your registration was successful, %s.', ucfirst($formValues['username']));
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             $this->messages['error'][] = 'There was an issue connecting to the database, please try again later.';
         }
     }
