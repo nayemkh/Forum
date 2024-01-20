@@ -3,7 +3,7 @@
 $url = substr($_SERVER['REQUEST_URI'], 1);
 $viewsPath = __DIR__ . '/views';
 
-$views = ['registration'];
+$views = ['registration', 'login'];
 
 require_once __DIR__ . '/elements/forum_functions.php';
 
